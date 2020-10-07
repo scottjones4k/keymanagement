@@ -1,3 +1,4 @@
+using KeyManagement.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using KeyManagment.Bus;
 
 namespace KeyManagement
 {
@@ -28,6 +31,19 @@ namespace KeyManagement
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            var sqlConnectionString = Configuration.GetConnectionString("MySqlProvider");
+
+            services.AddDbContext<DataContext>(options =>
+                options.UseMySql(
+                    sqlConnectionString
+                )
+            );
+
+            services.AddTransient<ICommandContext, BusContext>();
+            services.AddTransient<IQueryContext, BusContext>();
+            services.AddTransient<ICommandBus, CommandBus>();
+            services.AddTransient<IQueryBus, QueryBus>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
